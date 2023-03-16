@@ -47,5 +47,8 @@
     <ClInclude Include="string_plus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stream_plus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -139,6 +139,7 @@
     <ClInclude Include="mandelbrot.h" />
     <ClInclude Include="math_plus.h" />
     <ClInclude Include="split.h" />
+    <ClInclude Include="stream_plus.h" />
     <ClInclude Include="string_plus.h" />
     <ClInclude Include="trie.h" />
   </ItemGroup>
