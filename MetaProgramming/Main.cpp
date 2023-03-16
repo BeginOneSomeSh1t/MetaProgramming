@@ -58,16 +58,17 @@ int main(int argc, char**argv)
 {
 	STD_ON;
 	
-	vector<int> v{ 1,2,3,4,5,6 };
-	ostream_iterator<int> oit{ cout };
-	for (int i : v)
-		*oit = i;
+	print_whatever("Readable from normal stdcout");
+	{
+		redirect_cout_region redir{ "output.txt" };
+		print_whatever("Only visible in output.txt");
+		my_output_heavy_function();
+	}
 
-	print_whatever('\n');
+	{
+		redirect_cout_region redir{};
+		print_whatever("This will never make it till the console :)");
+	}
 
-	transform(begin(v), end(v), ostream_iterator<string>{cout, " "}, word_num);
-	print_whatever('\n');
-
-	copy(begin(v), end(v), ostream_iterator<bork>{cout, "\n"});
-
+	print_whatever("Readable from stdcout again");
 }
