@@ -22,26 +22,26 @@ void print_whatever(Args...args)
 	((std::cout << args), ...);
 }
 
-// helper
-template<typename _InputIt>
-void print(_InputIt it, _InputIt end_it)
-{
-	while (it != end_it)
-	{
-		const std::string link{ *it++ };
-		if (it == end_it) break;
-		const std::string desc{ *it++ };
-		print_whatever(std::left, std::setw(28), desc, ": ", link, '\n');
-	}
-}
+
 
 int main(int argc, char**argv)
 {
 	STD_ON;
-	cin >> noskipws;
-	const string in{ istream_iterator<char>{cin}, {} };
-	const regex link_re{ "<a href=\"([^\"]*)\"[^<]*>([^<]*)</a>" };
-	sregex_token_iterator it{ begin(in), end(in), link_re, {1,2} };
-	print(it, {});
+	// format guard test
+	{
+		format_guard g;
+		print_whatever(hex, scientific, showbase, uppercase);
+		print_whatever("Numbers with special formatting:\n");
+		print_whatever(0x123abc, '\n');
+		print_whatever(0.123456789, '\n');
+	}
+
+	print_whatever("Same numbers but format_guard is dead now:\n");
+	print_whatever(0x123abc, '\n');
+	print_whatever(0.123456789, '\n');
+
+	print_whatever("Mixed formatting: \n");
+	print_whatever(123.0, ' ', scientific_type{123.0}, " ", 123.456, '\n');
+
 	
 }
