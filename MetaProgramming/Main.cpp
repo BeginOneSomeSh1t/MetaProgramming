@@ -35,15 +35,25 @@ int main()
 {
 	STD_ON;
 	
-	print({});
-	print("a const char* array");
-	print("an std::string_view literla"sv);
-	print("an std::string instance"s);
+	print_whatever("Please enter tow numbers: \n");
+	int x;
+	double y;
+	if (cin >> x >> y)
+		print_whatever("You entered: ", x, " and ", y, "\n");
+	else
+	{
+		print_whatever("Oh that did not work out!\n");
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
 
-	print("  \t\n foobar \n\t");
-
-	char cstr[]{ 'a', 'b', 'c' };
-	print(string_view(cstr, sizeof(cstr)));
+	print_whatever("Please< enter some comma-separated names: \n");
+	for (string s; getline(cin >> ws, s, ',');)
+	{
+		if (s.empty())
+			break;
+		print_whatever("name: ", s, '\n');
+	}
 
 	
 }
