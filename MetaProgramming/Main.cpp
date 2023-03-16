@@ -58,17 +58,13 @@ int main(int argc, char**argv)
 {
 	STD_ON;
 	
-	print_whatever("Readable from normal stdcout");
-	{
-		redirect_cout_region redir{ "output.txt" };
-		print_whatever("Only visible in output.txt");
-		my_output_heavy_function();
-	}
+	print_whatever("string: ", string{ "Foo Bar Baz" });
+	print_whatever("lc_string: ", lc_string{ "Foo Bar Baz" });
+	print_whatever("ci_string: ", ci_string{ "Foo Bar Baz" });
 
-	{
-		redirect_cout_region redir{};
-		print_whatever("This will never make it till the console :)");
-	}
+	ci_string user_input{ "MaGiC pASSword!" };
+	ci_string pass{ "magic password!" };
 
-	print_whatever("Readable from stdcout again");
+	if (user_input == pass)
+		print_whatever("Passes match: ", user_input, " == ", pass, '\n');
 }
