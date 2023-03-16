@@ -35,14 +35,11 @@ int main()
 {
 	STD_ON;
 	
-	string a{ "a" };
-	auto b("b"s);
+	string s{ " \t\n string surrounded by ugly whitespace \t\n" };
+	print_whatever("{", s, "}");
+	print_whatever("{", trim_whitespace_surrounding(s), "}\n");
 
-	string_view c{ "c" };
-	auto d{ "d"sv };
 
-	cout << a << ", " << b << '\n';
-	cout << c << ", " << d << '\n';
 
 	
 }

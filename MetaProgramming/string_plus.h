@@ -4,9 +4,12 @@
 #include <algorithm>
 #include <sstream>
 #include <tuple>
+#include <cctype>
 
 namespace std
 {
+
+	// string compression
 	template<typename _It>
 	tuple<_It, char, size_t> occurrences(_It it, _It end_it)
 	{
@@ -39,5 +42,15 @@ namespace std
 		size_t n;
 		while (ss >> c >> n) { f << string(n, c); };
 		return f.str();
+	}
+
+
+	string trim_whitespace_surrounding(const string& s)
+	{
+		const char whitespace[]{ " \t\n" };
+		const size_t first{ s.find_first_not_of(whitespace) };
+		if (string::npos == first) return{};
+		const size_t last{ s.find_last_not_of(whitespace) };
+		return s.substr(first, (last - first + 1));
 	}
 }
