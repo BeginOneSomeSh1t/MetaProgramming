@@ -72,4 +72,11 @@ namespace std
 		cout << "Lenght: " << v.length()
 			<< " [" << v << "]\n";
 	}
+
+	// word count for string as well as for a file
+	template<typename _Ty>
+	size_t wordcount(_Ty& is)
+	{
+		return distance(istream_iterator<string>{is}, {});
+	}
 }

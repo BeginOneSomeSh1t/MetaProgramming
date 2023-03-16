@@ -8,6 +8,7 @@
 #include "string_plus.h"
 #include <string_view>
 #include <sstream>
+#include <fstream>
 
 #define STD_ON using namespace std
 
@@ -31,29 +32,21 @@ namespace std
 
 
 
-int main()
+int main(int argc, char**argv)
 {
 	STD_ON;
 	
-	print_whatever("Please enter tow numbers: \n");
-	int x;
-	double y;
-	if (cin >> x >> y)
-		print_whatever("You entered: ", x, " and ", y, "\n");
-	else
-	{
-		print_whatever("Oh that did not work out!\n");
-		cin.clear();
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-	}
+	size_t wc;
 
-	print_whatever("Please< enter some comma-separated names: \n");
-	for (string s; getline(cin >> ws, s, ',');)
+	if (argc == 2)
 	{
-		if (s.empty())
-			break;
-		print_whatever("name: ", s, '\n');
+		ifstream ifs{ argv[1] };
+		wc = wordcount(ifs);
 	}
+	else
+		wc = wordcount(cin);
+
+	print_whatever("There are ", wc, " words\n");
 
 	
 }
