@@ -35,11 +35,15 @@ int main()
 {
 	STD_ON;
 	
-	string s{ " \t\n string surrounded by ugly whitespace \t\n" };
-	print_whatever("{", s, "}");
-	print_whatever("{", trim_whitespace_surrounding(s), "}\n");
+	print({});
+	print("a const char* array");
+	print("an std::string_view literla"sv);
+	print("an std::string instance"s);
 
+	print("  \t\n foobar \n\t");
 
+	char cstr[]{ 'a', 'b', 'c' };
+	print(string_view(cstr, sizeof(cstr)));
 
 	
 }
