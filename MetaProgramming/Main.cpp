@@ -10,6 +10,7 @@
 #include <sstream>
 #include <fstream>
 #include "stream_plus.h"
+#include <unordered_map>
 
 #define STD_ON using namespace std
 
@@ -19,43 +20,54 @@ void print_whatever(Args...args)
 	((std::cout << args), ...);
 }
 
-namespace std
+std::string word_num(int i)
 {
-	template<typename _Ty>
-	ostream& operator<<(ostream& os, vector<_Ty>& v)
+	std::unordered_map<int, std::string> m
 	{
-		copy(begin(v), end(v),
-			ostream_iterator<_Ty>{cout, ", "});
-		return os;
-	}
+		{1, "one"},
+		{2, "two"},
+		{3, "three"},
+		{4, "four"},
+		{5, "five"},
+	};
+	const auto match{ m.find(i) };
+	if (match == std::end(m))
+		return "Unknown";
+	return match->second;
 }
 
+struct bork
+{
+	int borks;
+	bork(int i) : borks{i}{}
 
+	void print(std::ostream& os) const
+	{
+		using namespace std::string_literals;
+		std::fill_n(std::ostream_iterator<std::string>{os, " "}, borks, "bork!"s);
+	}
+};
 
+std::ostream& operator<<(std::ostream& os, const bork& b)
+{
+	b.print(os);
+	return os;
+}
 
 int main(int argc, char**argv)
 {
 	STD_ON;
 	
-	print_aligned_demo(12345, 15);
-	print_aligned_demo(123456, 15, '_');
+	vector<int> v{ 1,2,3,4,5,6 };
+	ostream_iterator<int> oit{ cout };
+	for (int i : v)
+		*oit = i;
 
-	cout << hex << showbase;
-	print_aligned_demo(0x123abc, 15);
+	print_whatever('\n');
 
-	cout << oct;
-	print_aligned_demo(0123456, 15);
+	transform(begin(v), end(v), ostream_iterator<string>{cout, " "}, word_num);
+	print_whatever('\n');
 
-	print_whatever("A hex number with upper case letters: ", hex, uppercase, 0x123abc, '\n');
-	print_whatever("A number: ", 100, '\n');
-	print_whatever(dec);
-	print_whatever("Now in decimal again: ", 100, '\n');
+	copy(begin(v), end(v), ostream_iterator<bork>{cout, "\n"});
 
-
-	print_whatever(12.3, showpoint, 12.0, '\n');
-
-	print_whatever("scientific: ", scientific, 1230000000.13, '\n');
-	print_whatever(fixed, "Now fixed: ", 123000000.13, '\n');
-
-	
 }
