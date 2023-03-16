@@ -10,7 +10,9 @@
 #include <sstream>
 #include <fstream>
 #include "stream_plus.h"
-#include <unordered_map>
+#include <regex>
+#include <algorithm>
+#include <iomanip>
 
 #define STD_ON using namespace std
 
@@ -20,51 +22,26 @@ void print_whatever(Args...args)
 	((std::cout << args), ...);
 }
 
-std::string word_num(int i)
+// helper
+template<typename _InputIt>
+void print(_InputIt it, _InputIt end_it)
 {
-	std::unordered_map<int, std::string> m
+	while (it != end_it)
 	{
-		{1, "one"},
-		{2, "two"},
-		{3, "three"},
-		{4, "four"},
-		{5, "five"},
-	};
-	const auto match{ m.find(i) };
-	if (match == std::end(m))
-		return "Unknown";
-	return match->second;
-}
-
-struct bork
-{
-	int borks;
-	bork(int i) : borks{i}{}
-
-	void print(std::ostream& os) const
-	{
-		using namespace std::string_literals;
-		std::fill_n(std::ostream_iterator<std::string>{os, " "}, borks, "bork!"s);
+		const std::string link{ *it++ };
+		if (it == end_it) break;
+		const std::string desc{ *it++ };
+		print_whatever(std::left, std::setw(28), desc, ": ", link, '\n');
 	}
-};
-
-std::ostream& operator<<(std::ostream& os, const bork& b)
-{
-	b.print(os);
-	return os;
 }
 
 int main(int argc, char**argv)
 {
 	STD_ON;
+	cin >> noskipws;
+	const string in{ istream_iterator<char>{cin}, {} };
+	const regex link_re{ "<a href=\"([^\"]*)\"[^<]*>([^<]*)</a>" };
+	sregex_token_iterator it{ begin(in), end(in), link_re, {1,2} };
+	print(it, {});
 	
-	print_whatever("string: ", string{ "Foo Bar Baz" });
-	print_whatever("lc_string: ", lc_string{ "Foo Bar Baz" });
-	print_whatever("ci_string: ", ci_string{ "Foo Bar Baz" });
-
-	ci_string user_input{ "MaGiC pASSword!" };
-	ci_string pass{ "magic password!" };
-
-	if (user_input == pass)
-		print_whatever("Passes match: ", user_input, " == ", pass, '\n');
 }
