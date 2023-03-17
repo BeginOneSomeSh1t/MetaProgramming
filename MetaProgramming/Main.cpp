@@ -1,9 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <variant>
-#include <list>
-#include <string>
-#include <algorithm>
+#include <iomanip>
+#include <memory>
 
 #define STD_ON using namespace std
 
@@ -13,49 +11,36 @@ void print_whatever(Args...args)
 	((std::cout << args), ...);
 }
 
-class cat
-{
-	std::string name;
-public:
-	cat(std::string n) : name{n}{}
-	void meow() const
-	{
-		print_whatever(name, "says Meow!\n");
-	}
+struct Foo {
+	int value;
+	Foo(int i) : value{ i } {}
+	~Foo() { std::cout << "DTOR Foo " << value << '\n'; }
 };
 
-class dog
+void weak_ptr_info(const std::weak_ptr<Foo>& p)
 {
-	std::string name;
-public:
-	dog(std::string n) : name{n}{}
-	void woof() const { print_whatever(name, " says Woof"); }
-};
+	print_whatever("-------------", std::boolalpha, "\nexpired: ", p.expired());
+	print_whatever("\nexpired: ", p.use_count());
+	print_whatever("\ncontent: ");
 
-using animal = std::variant<dog, cat>;
-
-template<typename _Ty>
-bool is_type(const animal& a)
-{
-	return std::holds_alternative<_Ty>(a);
+	if (const auto sp{ p.lock() }; sp)
+		print_whatever(sp->value, '\n');
+	else
+		print_whatever("<nullptr>");
 }
-
-struct animal_voice
-{
-	void operator()(const dog& d) const { d.woof(); }
-	void operator()(const cat& c) const { c.meow(); }
-};
-
 int main(int argc, char**argv)
 {
 	STD_ON;
-	list<animal> l{ cat{"Tuba"}, dog{"Balou"}, cat{"Bobby"} };
+	weak_ptr<Foo> weak_foo;
+	weak_ptr_info(weak_foo);
+	{
+		auto shared_foo{ make_shared<Foo>(1337) };
+		weak_foo = shared_foo;
+		weak_ptr_info(weak_foo);
+	}
 
-	
+	weak_ptr_info(weak_foo);
 
-	for (const animal& a : l)
-		visit(animal_voice{}, a);
-	print_whatever("----------\n");
 
 
 	
