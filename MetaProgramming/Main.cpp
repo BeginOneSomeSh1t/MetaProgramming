@@ -1,18 +1,9 @@
 #include <iostream>
-#include <string>
-#include <algorithm>
-#include <iterator>
-#include <list>
-#include <vector>
-#include <functional>
-#include "string_plus.h"
-#include <string_view>
-#include <sstream>
-#include <fstream>
-#include "stream_plus.h"
-#include <regex>
-#include <algorithm>
+#include <chrono>
+#include <ratio>
+#include <cmath>
 #include <iomanip>
+#include <optional>
 
 #define STD_ON using namespace std
 
@@ -22,26 +13,42 @@ void print_whatever(Args...args)
 	((std::cout << args), ...);
 }
 
+using seconds = std::chrono::duration<double>;
 
+using miliseconds = std::chrono::duration<double, std::ratio_multiply<seconds::period, std::milli>>;
+
+using microseconds = std::chrono::duration<double, std::ratio_multiply<seconds::period, std::micro>>;
+
+
+static std::pair<std::string, seconds> get_input()
+{
+	std::string s;
+	const auto tic{ std::chrono::steady_clock::now() };
+	if (!(std::cin >> s))
+		return { {}, {} };
+	const auto toc{ std::chrono::steady_clock::now() };
+	return { s, toc - tic };
+}
 
 int main(int argc, char**argv)
 {
 	STD_ON;
-	// format guard test
+	while (true)
 	{
-		format_guard g;
-		print_whatever(hex, scientific, showbase, uppercase);
-		print_whatever("Numbers with special formatting:\n");
-		print_whatever(0x123abc, '\n');
-		print_whatever(0.123456789, '\n');
+		print_whatever("Please, type the word \"C++17\" as fast as you can.\n");
+		const auto [user_input, diff] {get_input()};
+		if (user_input == "") break;
+		if (user_input == "C++17")
+		{
+			print_whatever("Bravo!. You did that!:\n");
+			print_whatever(fixed, setprecision(2), setw(12), diff.count(), " seconds.\n");
+			print_whatever(setw(12), miliseconds(diff).count(), " miliseconds.\n");
+			print_whatever(setw(12), microseconds(diff).count(), " microseconds.\n");
+			break;
+		}
+		else
+			print_whatever("Sorry, your input does not match, try again!\n");
 	}
-
-	print_whatever("Same numbers but format_guard is dead now:\n");
-	print_whatever(0x123abc, '\n');
-	print_whatever(0.123456789, '\n');
-
-	print_whatever("Mixed formatting: \n");
-	print_whatever(123.0, ' ', scientific_type{123.0}, " ", 123.456, '\n');
 
 	
 }
