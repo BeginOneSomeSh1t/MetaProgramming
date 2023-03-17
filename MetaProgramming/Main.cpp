@@ -1,6 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include "tuple_plus.h"
+#include <variant>
+#include <list>
+#include <string>
+#include <algorithm>
 
 #define STD_ON using namespace std
 
@@ -10,22 +13,49 @@ void print_whatever(Args...args)
 	((std::cout << args), ...);
 }
 
+class cat
+{
+	std::string name;
+public:
+	cat(std::string n) : name{n}{}
+	void meow() const
+	{
+		print_whatever(name, "says Meow!\n");
+	}
+};
 
+class dog
+{
+	std::string name;
+public:
+	dog(std::string n) : name{n}{}
+	void woof() const { print_whatever(name, " says Woof"); }
+};
+
+using animal = std::variant<dog, cat>;
+
+template<typename _Ty>
+bool is_type(const animal& a)
+{
+	return std::holds_alternative<_Ty>(a);
+}
+
+struct animal_voice
+{
+	void operator()(const dog& d) const { d.woof(); }
+	void operator()(const cat& c) const { c.meow(); }
+};
 
 int main(int argc, char**argv)
 {
 	STD_ON;
-	auto student_desc{ make_tuple("ID", "Name", "GPA") };
-	auto student{ make_tuple(123456,"JonhDoes", 3.7) };
+	list<animal> l{ cat{"Tuba"}, dog{"Balou"}, cat{"Bobby"} };
 
-	print_whatever(student_desc, '\n', student, '\n');
+	
 
-	print_whatever(tuple_cat(student_desc, student), '\n');
-
-	auto zipped(zip(student_desc, student));
-
-	auto numbers = { 0., 1., 2., 3., 4. };
-	print_whatever(zip(make_tuple("Sum", "Minimum", "Maximum", "Average"), sum_min_max_avg(numbers)));
+	for (const animal& a : l)
+		visit(animal_voice{}, a);
+	print_whatever("----------\n");
 
 
 	
