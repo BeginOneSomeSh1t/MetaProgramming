@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <iomanip>
-#include <chrono>
+#include "tuple_plus.h"
 
 #define STD_ON using namespace std
 
@@ -11,34 +10,23 @@ void print_whatever(Args...args)
 	((std::cout << args), ...);
 }
 
-std::ostream& operator<<(std::ostream& os, const std::chrono::time_point<std::chrono::system_clock>& t)
-{
-	const auto tt{ std::chrono::system_clock::to_time_t(t) };
-	const auto loct{ std::localtime(&tt) };
-	return os << std::put_time(loct, "%c");
-}
 
-using days = std::chrono::duration 
-< std::chrono::hours::rep, 
-	std::ratio_multiply<std::chrono::hours::period, std::ratio<24>>>;
-
-
-constexpr days operator ""_days(unsigned long long h)
-{
-	return days{ h };
-}
 
 int main(int argc, char**argv)
 {
 	STD_ON;
-	auto now{ chrono::system_clock::now() };
-	print_whatever("The current date and time is ", now, '\n');
+	auto student_desc{ make_tuple("ID", "Name", "GPA") };
+	auto student{ make_tuple(123456,"JonhDoes", 3.7) };
 
-	chrono::hours chrono_12h{ 12 };
-	print_whatever("In 12 hourse it'll be: ", (now + chrono_12h), '\n');
+	print_whatever(student_desc, '\n', student, '\n');
 
-	using namespace chrono_literals;
-	print_whatever("12 hours and 15 minutes ago it was ", (now - 12h - 15min), '\n');
-	print_whatever("One week ago: ", (now - 7_days), '\n');
+	print_whatever(tuple_cat(student_desc, student), '\n');
+
+	auto zipped(zip(student_desc, student));
+
+	auto numbers = { 0., 1., 2., 3., 4. };
+	print_whatever(zip(make_tuple("Sum", "Minimum", "Maximum", "Average"), sum_min_max_avg(numbers)));
+
+
 	
 }

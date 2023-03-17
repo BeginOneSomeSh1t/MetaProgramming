@@ -142,6 +142,7 @@
     <ClInclude Include="stream_plus.h" />
     <ClInclude Include="string_plus.h" />
     <ClInclude Include="trie.h" />
+    <ClInclude Include="tuple_plus.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
