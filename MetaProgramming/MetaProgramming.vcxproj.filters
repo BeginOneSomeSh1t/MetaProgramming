@@ -53,5 +53,8 @@
     <ClInclude Include="tuple_plus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="random_plus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

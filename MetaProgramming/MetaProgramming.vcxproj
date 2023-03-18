@@ -138,6 +138,7 @@
     <ClInclude Include="lambda.h" />
     <ClInclude Include="mandelbrot.h" />
     <ClInclude Include="math_plus.h" />
+    <ClInclude Include="random_plus.h" />
     <ClInclude Include="split.h" />
     <ClInclude Include="stream_plus.h" />
     <ClInclude Include="string_plus.h" />
