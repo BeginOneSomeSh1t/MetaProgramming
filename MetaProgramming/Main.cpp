@@ -1,9 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <thread>
-#include <mutex>
-#include <sstream>
-#include <vector>
+#include <iomanip>
+#include <map>
+#include <string>
+#include <algorithm>
+#include <iterator>
+#include <future>
+
 template<typename...Args>
 void print_whatever(Args...args)
 {
@@ -11,47 +14,47 @@ void print_whatever(Args...args)
 }
 
 using namespace std;
-using namespace chrono_literals;
 
-struct pcout : public stringstream
+static map<char, size_t> histogram(const string& s)
 {
-	static inline mutex cout_mutex;
-	~pcout()
-	{
-		lock_guard g{ cout_mutex };
-		cout << rdbuf();
-		cout.flush();
-	}
-};
-
-
-static void print_cout(int id)
-{
-	cout << "Cout hello from" << id << '\n';
-}
-static void print_pcout(int id)
-{
-	pcout{} << "pcout hello from" << id << '\n';
+	map<char, size_t> m;
+	for (char c : s)
+		m[c] += 1;
+	return m;
 }
 
+static string sorted(string s)
+{
+	sort(begin(s), end(s));
+	return s;
+}
+
+static bool is_vowel(char c)
+{
+	char vowels[]{ "aeiou" };
+	return end(vowels) != find(begin(vowels), end(vowels), c);
+}
+
+static size_t vowels(const string& s)
+{
+	return count_if(begin(s), end(s), is_vowel);
+}
 
 int main(int argc, char**argv)
 {
-	vector<thread> vt;
-	for (size_t i{ 0 }; i < 10; ++i)
-		vt.emplace_back(print_cout, i);
+	cin.unsetf(ios::skipws);
+	string input{ istream_iterator<char>{cin}, {} };
+	input.pop_back();
 
-	for (auto& t : vt)
-		t.join();
+	auto hist{ async(launch::async, histogram, input) };
+	auto sorted_str{ async(launch::async, sorted, input) };
+	auto vowel_count{ async(launch::async, vowels, input) };
 
-	cout << "======================\n";
-
-	vt.clear();
-	for (size_t i{ 0 }; i < 10; ++i)
-		vt.emplace_back(print_pcout, i);
-	for (auto& t : vt)
-		t.join();
-
-
+	for (const auto& [c, count] : hist.get())
+		cout << c << " : " << count << '\n';
+	cout << "sorted string: "
+		<< quoted(sorted_str.get()) << '\n'
+		<< "Total vowels: "
+		<< vowel_count.get() << '\n';
 
 }
