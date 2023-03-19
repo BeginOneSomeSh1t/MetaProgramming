@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <locale>
 #include <fstream>
+#include <sstream>
+#include <mutex>
 
 namespace std
 {
@@ -68,4 +70,16 @@ namespace std
 		os << scientific << uppercase << showpos;
 		return os << w.value;
 	}
+
+
+	struct pcout : stringstream
+	{
+		static inline mutex cout_mutex;
+		~pcout()
+		{
+			lock_guard<mutex> l{ cout_mutex };
+			cout << rdbuf();
+			cout.flush();
+		}	
+	};
 }
