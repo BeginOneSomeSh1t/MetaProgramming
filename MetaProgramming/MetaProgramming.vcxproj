@@ -129,10 +129,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="delegate.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cast.h" />
+    <ClInclude Include="delegate.h" />
     <ClInclude Include="gather.h" />
     <ClInclude Include="iterator_plus.h" />
     <ClInclude Include="lambda.h" />
