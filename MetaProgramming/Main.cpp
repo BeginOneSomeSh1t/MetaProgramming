@@ -1,14 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <iomanip>
-#include <sstream>
+#include <algorithm>
+#include <iterator>
+#include <complex>
+#include <numeric>
 #include <vector>
-#include <queue>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <chrono>
-
+#include <future>
 
 template<typename...Args>
 void print_whatever(Args...args)
@@ -19,77 +16,71 @@ void print_whatever(Args...args)
 using namespace std;
 using namespace chrono_literals;
 
-struct pcout : stringstream
+using cmplx = complex<double>;
+static auto scaler(int min_from, int max_from, double min_to, double max_to)
 {
-	static inline mutex cout_mutex;
-	~pcout()
+	const int w_from{ max_from - min_from };
+	const double w_to{ max_to - min_to };
+	const int mid_from{ (max_from - min_from) / 2 + min_from };
+	const double mid_to{ (max_to - min_to) / 2 + min_to };
+	return [=](int from)
 	{
-		lock_guard<mutex> l{ cout_mutex };
-		cout << rdbuf();
-	}
-};
-
-queue<size_t> q;
-mutex q_mutex;
-bool production_stopped{ false };
-
-condition_variable go_produce;
-condition_variable go_consume;
-
-static void producer(size_t id, size_t items, size_t stock)
-{
-	for (size_t i{ 0 }; i < items; ++i)
-	{
-		unique_lock<mutex> l{ q_mutex };
-		go_produce.wait(l,
-			[&] {return q.size() < stock; });
-		q.push(id * 100 + i);
-		pcout{} << "   Producer " << id << " --> item "
-			<< setw(3) << q.back() << '\n';
-
-		go_consume.notify_all();
-		this_thread::sleep_for(90ms);
-	}
-	pcout{} << "EXIT: Producre " << id << '\n';
+		return double(from - mid_from) / w_from * w_to + mid_to;
+	};
 }
 
-static void consumer(size_t id)
+template<typename _A, typename _B>
+static auto scaled_cmplx(_A scaler_x, _B scaler_y)
 {
-	while (!production_stopped || !q.empty())
+	return [=](int x, int y)
 	{
-		unique_lock<mutex> l {q_mutex};
-		if (go_consume.wait_for(l, 1s,
-			[] {return !q.empty(); }))
-		{
-			pcout{} << "        item "
-				<< setw(3) << q.front()
-				<< " --> Consumer "
-				<< id << "\n";
-			q.pop();
-			go_produce.notify_all();
-			this_thread::sleep_for(130ms);
-		}
-	}
-	pcout{} << "EXIT: Consumer " << id << '\n';
+		return cmplx{ scaler_x(x), scaler_y(y) };
+	};
 }
 
+static auto mandelbrot_iterations(cmplx c)
+{
+	cmplx z{};
+	size_t iterations{ 0 };
+	const size_t max_iterations{ 100000 };
+	while (abs(z) < 2 && iterations < max_iterations) {
+		++iterations;
+		z = pow(z, 2) + c;
+	}
+	return iterations;
+}
 
 
 int main(int argc, char**argv)
 {
-	vector<thread> workers;
-	vector<thread> consumers;
+	const size_t w{ 100 };
+	const size_t h{ 40 };
+	auto scale(scaled_cmplx(
+		scaler(0, w, -2.0, 1.0),
+		scaler(0, h, -1.0, 1.0)
+	));
+	auto i_to_xy([=](int x) {
+		return scale(x % w, x / w);
+		});
 
-	for (size_t i{ 0 }; i < 3; ++i)
-		workers.emplace_back(producer, i, 15, 5);
-	for (size_t i{ 0 }; i < 5; ++i)
-		consumers.emplace_back(consumer, i);
+	auto to_iteration_count{ [=](int x) {
+		return async(launch::async,
+			mandelbrot_iterations, i_to_xy(x));
+	} };
 
-	for (auto& t : workers)
-		t.join();
-	production_stopped = true;
+	
+	vector<int> v(w * h);
+	vector<future<size_t>> r(w * h);
+	iota(begin(v), end(v), 0);
+	transform(begin(v), end(v), begin(r),
+		to_iteration_count);
 
-	for (auto& t : consumers)
-		t.join();
-
+	auto binfunc([w, n{ 0 }](auto output_it, future<size_t>& x)
+		mutable {
+			*++output_it = (x.get() > 50 ? '*' : ' ');
+	if (++n % w == 0) { ++output_it = '\n'; }
+	return output_it;
+		});
+	accumulate(begin(r), end(r),
+		ostream_iterator<char>{cout}, binfunc);
 }
