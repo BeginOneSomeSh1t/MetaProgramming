@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <numeric>
+#include <map>
 #include <filesystem>
 #include "string_plus.h"
 
@@ -16,33 +16,48 @@ void print_whatever(Args...args)
 using namespace std;
 using namespace filesystem;
 
-static size_t entry_size(const directory_entry& entry)
+using ext_info = map<string, pair<size_t, size_t>>;
+
+static ext_info ext_stats(const path& dir)
 {
-	if (!is_directory(entry)) return file_size(entry);
-	return accumulate(directory_iterator{ entry }, {}, 0u,
-		[](size_t accum, const directory_entry& e)
-		{
-			return accum + entry_size(e);
-		});
+	ext_info m;
+	for (const auto& entry :
+		recursive_directory_iterator{ dir })
+	{
+		const path p{ entry.path() };
+		const file_status fs{ status(p) };
+		if (is_directory(fs)) { continue; }
+		const string ext{ p.extension().string() };
+		if (ext.length() == 0)
+			continue;
+
+		const size_t size{ file_size(p) };
+		auto& [size_accum, count] = m[ext];
+		size_accum += size;
+		count += 1;
+	}
+	return m;
 }
 
 
 
 int main(int argc, char**argv)
 {
-	args_string args{ args_string::unskip_ws{} };
+	args_string args{};
 	path dir{ args.argc > 1 ? args[1] : "." };
 	if (!exists(dir))
 	{
-		cout << "Path " << dir << " does not exist.\n";
+		cout << "Path " << dir << " does not exist";
 		return 1;
 	}
 
-	for (const auto& entry : directory_iterator{ dir })
+	for (const auto& [ext, stats] : ext_stats(dir))
 	{
-		cout << setw(5) << right
-			<< size_string(entry_size(entry))
-			<< " " << entry.path().filename().string()
+		const auto& [accum_size, count] = stats;
+		cout << setw(15) << left << ext << ": "
+			<< setw(4) << right << count
+			<< " items, avg size "
+			<< setw(4) << size_string(accum_size / count)
 			<< '\n';
 	}
 }
