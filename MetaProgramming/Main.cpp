@@ -1,7 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <regex>
-#include <vector>
+#include <sstream>
+#include <iomanip>
+#include <numeric>
 #include <filesystem>
 #include "string_plus.h"
 
@@ -15,55 +16,33 @@ void print_whatever(Args...args)
 using namespace std;
 using namespace filesystem;
 
-template<typename _Ty>
-static string replace(string s, const _Ty& replacements)
+static size_t entry_size(const directory_entry& entry)
 {
-	for (const auto& [pattern, repl] : replacements)
-		s = regex_replace(s, pattern, repl);
-	return s;
+	if (!is_directory(entry)) return file_size(entry);
+	return accumulate(directory_iterator{ entry }, {}, 0u,
+		[](size_t accum, const directory_entry& e)
+		{
+			return accum + entry_size(e);
+		});
 }
 
 
 
 int main(int argc, char**argv)
 {
-	cin.unsetf(ios::skipws);
-	string patterns_replacements{ istream_iterator<char>{cin}, {} };
-
-	auto split_pr{ split_string(patterns_replacements) };
-	if (split_pr.size() < 3)
+	args_string args{ args_string::unskip_ws{} };
+	path dir{ args.argc > 1 ? args[1] : "." };
+	if (!exists(dir))
 	{
-		cout << "Usage: " << split_pr[0]
-			<< " <pattern> <replacement> ...\n";
+		cout << "Path " << dir << " does not exist.\n";
 		return 1;
 	}
 
-	vector<pair<regex, string>> patterns;
-	for (int i{ 0 }; i < split_pr.size(); i += 2)
-		patterns.emplace_back(split_pr[i], split_pr[i + 1]);
-
-	for (const auto& entry :
-		recursive_directory_iterator{ current_path() })
+	for (const auto& entry : directory_iterator{ dir })
 	{
-		path opath{ entry.path() };
-
-		string rname{ replace(opath.filename().string(), patterns) };
-		
-		path rpath{ opath };
-		rpath.replace_filename(rname);
-
-		if (opath != rpath)
-		{
-			cout << opath.string() << " --> "
-				<< rpath.filename().string() << '\n';
-			if (exists(rpath))
-			{
-				cout << "Can't rename."
-					" Destination file exists.\n";
-			}
-			else
-				rename(opath, rpath);
-		}
+		cout << setw(5) << right
+			<< size_string(entry_size(entry))
+			<< " " << entry.path().filename().string()
+			<< '\n';
 	}
-
 }

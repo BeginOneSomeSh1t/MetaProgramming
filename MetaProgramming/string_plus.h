@@ -103,6 +103,23 @@ namespace std
 		}
 		return r;
 	}
+
+	static string size_string(size_t size)
+	{
+		stringstream ss;
+		if (size >= 1000000000) {
+			ss << (size / 1000000000) << 'G';
+		}
+		else if (size >= 1000000) {
+			ss << (size / 1000000) << 'M';
+		}
+		else if (size >= 1000) {
+			ss << (size / 1000) << 'K';
+		}
+		else { ss << size << 'B'; }
+		return ss.str();
+	}
+
 }
 
 
@@ -209,4 +226,48 @@ namespace std
 	{
 		return os.write(str.data(), str.size());
 	}
+
+	
+
+	class args_string
+	{
+	public:
+		vector<string> args;
+		size_t argc;
+		
+		struct skip_ws{};
+		struct unskip_ws{};
+
+		args_string(string input = string{ istream_iterator<char>{cin}, {} })
+			:
+			args{split_string(input)},
+			argc{args.size()}
+		{
+			
+		}
+		args_string(skip_ws skip)
+		{
+			cin.setf(ios::skipws);
+			construct();
+		}
+		args_string(unskip_ws skip)
+		{
+			cin.unsetf(ios::skipws);
+			construct();
+		}
+		~args_string() = default;
+
+		string operator[](size_t i) const
+		{
+			return args[i];
+		}
+	private:
+		void construct()
+		{
+			string input{ istream_iterator<char>{cin}, {} };
+			args = split_string(input);
+			argc = args.size();
+		}
+
+	};
 }
