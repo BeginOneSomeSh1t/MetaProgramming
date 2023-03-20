@@ -6,6 +6,7 @@
 #include <tuple>
 #include <cctype>
 #include <string_view>
+#include <vector>
 
 namespace std
 {
@@ -78,6 +79,29 @@ namespace std
 	size_t wordcount(_Ty& is)
 	{
 		return distance(istream_iterator<string>{is}, {});
+	}
+
+	vector<string> split_string(const string& s)
+	{
+		vector<string> r;
+		for (auto next_it{ begin(s) }; next_it != end(s);)
+		{
+			auto word_end_it{ find(next_it, end(s), ' ') };
+			r.emplace_back(next_it, word_end_it);
+			if (word_end_it == end(s))
+			{
+				if (auto it = find(begin(r.back()), end(r.back()), '\n'); it != end(r.back()))
+				{
+					string word_without_endl{begin(r.back()), it};
+					r.pop_back();
+					r.emplace_back(word_without_endl);
+				}
+				break;
+			}
+
+			next_it = next(word_end_it);
+		}
+		return r;
 	}
 }
 
